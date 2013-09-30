@@ -3,11 +3,15 @@
 #include <vector>
 #include <algorithm>
 
-bool compare_node::operator()(a_node &a1, a_node &a2) {
-	return ( a1.f > a2.f );	
+a_node::a_node() {
+	this->ativo = true;
 }
 
-void a_vector::push_node(a_node n) {
+bool compare_node::operator()(a_node *&a1, a_node *&a2) {
+	return ( a1->f > a2->f );	
+}
+
+void a_vector::push_node(a_node *n) {
 	this->push_back(n);
 	std::push_heap(this->begin(), this->end(), compare_node()); 
 }
