@@ -10,16 +10,16 @@ a_vector open_set;
 //OPEN-SET-GARBAGE
 std::unordered_map<int, a_node*> garbage;
 //CLOSED-SET
-std::unordered_map<int, a_node> closed_set;
+std::unordered_map<std::string, a_node> closed_set;
 
 float calc_h(a_node n) {
-	return (out_of_order_heuristic(n.matrix) +
-			out_of_sequence_heuristic(n.matrix) +
-	rect_distance_heuristic(n.matrix));
+//	return (out_of_order_heuristic(n.matrix));// +
+//			out_of_sequence_heuristic(n.matrix);// +
+	return rect_distance_heuristic(n.matrix);
 }
 
 void initialize_sets(a_node _node) {
-	_node.parent = 0;
+	_node.parent = "root";
 	_node.node_number = 1;
 	_node.g = 0;
 	_node.h = calc_h(_node);
@@ -104,11 +104,21 @@ a_node *isInsideClosed(Iterator begin, Iterator end, a_node n) {
 	return NULL;
 };
 
-a_node *a_star(a_node start, a_node end) {
+std::string generate_key(int mat[][4]) {
+	std::string key = "";
+	for(int i=0; i<4; i++) {
+		for(int j=0; j<4; j++) {
+			if(mat[i][j] < 10) key += "0";
+			key += mat[i][j];
+		}
+	}
+	return key;
+}
+
+a_node *a_star(a_node start, a_node end, int &node_number) {
 	a_node *closest_node = new a_node();
 	a_node *former_node;
 	float g_try_score;
-	int node_number = 1;
 	std::vector<a_node> new_nodes;
 
 	//iterators
@@ -123,7 +133,7 @@ a_node *a_star(a_node start, a_node end) {
 			continue;
 		}
 
-		closed_set[closest_node->node_number] = *closest_node;
+		closed_set[generate_key(closest_node->matrix)] = *closest_node;
 
 		//		std::cout << "open: " << open_set.size() << std::endl;
 
@@ -135,11 +145,12 @@ a_node *a_star(a_node start, a_node end) {
 		create_nodes(new_nodes, *closest_node);
 		for(std::vector<a_node>::iterator i=new_nodes.begin(); i!=new_nodes.end(); i++) {
 			g_try_score = closest_node->g + 1;
-			if(isInsideClosed(closed_set.begin(), closed_set.end(), (*i)) != NULL) continue;
+			//if(isInsideClosed(closed_set.begin(), closed_set.end(), (*i)) != NULL) continue;
+			if(closed_set.find(generate_key(i->matrix)) != closed_set.end()) continue;
 			i->g = g_try_score;
 			i->h = calc_h(*i);
 			i->f = i->g + i->h;
-			i->parent = closest_node->node_number;
+			i->parent = generate_key(closest_node->matrix);
 			if((former_node = isInsideOpen(open_set.begin(), open_set.end(), it_vec, (*i))) != NULL) {
 				if(former_node->g <= g_try_score) continue;
 				//				std::cout << "testeeee " << std::endl;
@@ -156,7 +167,7 @@ a_node *a_star(a_node start, a_node end) {
 
 void backtrace(a_node n) {
 	a_node last;
-	last.parent = n.node_number;
+	last.parent = generate_key(n.matrix);
 	int mov = -1;
 	do {
 		last = closed_set[last.parent];
@@ -164,7 +175,7 @@ void backtrace(a_node n) {
 		print(last.matrix);
 		std::cout << std::endl;
 		mov++;
-	} while(last.parent != 0);
+	} while(last.parent != "root");
 	std::cout << mov << " movements!" << std::endl;
 }
 
@@ -190,8 +201,11 @@ int main() {
 	   s.matrix[o/4][o%4] = m[o];
 	   }
 	 */
+	std::cout << generate_key(s.matrix) << std::endl;
 	read_mat(s.matrix);
 	print(s.matrix);
-	backtrace(*(a_star(s, e)));
+	int nodes = 1;
+	backtrace(*(a_star(s, e, nodes)));
+	std::cout << "nodes_num: " << nodes << std::endl;
 }
 

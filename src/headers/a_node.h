@@ -2,13 +2,14 @@
 #define NODE_H
 
 #include <vector>
+#include <string>
 
 class a_node {
 	public:
 		int matrix[4][4];
 		int node_number;
 		float h, g, f;
-		int parent;
+		std::string parent;
 };
 
 class a_vector : public std::vector<a_node> {
