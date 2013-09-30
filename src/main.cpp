@@ -15,9 +15,9 @@ std::unordered_map<int, a_node*> garbage;
 std::unordered_map<std::string, a_node> closed_set;
 
 float calc_h(a_node n) {
-	//	return (out_of_order_heuristic(n.matrix)); //+
-	//	return		out_of_sequence_heuristic(n.matrix);// +
-	return		rect_distance_heuristic(n.matrix);
+		return (out_of_order_heuristic(n.matrix)); //+
+//		return	out_of_sequence_heuristic(n.matrix); // +
+//		return	rect_distance_heuristic(n.matrix);
 }
 
 std::string generate_key(int mat[][4]) {
@@ -113,15 +113,17 @@ a_node *a_star(a_node start, a_node end, int &node_number) {
 	//iterators
 	a_vector::iterator it_vec;
 	std::unordered_map<int, a_node*>::iterator it_garb;
+	std::unordered_map<std::string, a_node>::iterator it;
 	initialize_sets(start);
 	while(!open_set.empty()) {
 		closest_node = open_set.front();
 		open_set.pop_node();
-		if(garbage.find(closest_node->node_number) != garbage.end()) {
-
-			garbage.erase(closest_node->node_number);
-			continue;
-
+		if((it_garb = garbage.find(closest_node->node_number)) != garbage.end()) {
+			if(it_garb->second->ativo) it_garb->second->ativo = false;
+			else {
+				garbage.erase(closest_node->node_number);
+				continue;
+			}
 		}
 
 		closed_set[generate_key(closest_node->matrix)] = *closest_node;
@@ -131,7 +133,7 @@ a_node *a_star(a_node start, a_node end, int &node_number) {
 		if(node_equal(*closest_node, end)) return closest_node;
 
 		//		std::cout << "closed: " << closed_set.size() << std::endl;
-		// std::cout << "number: " << node_number << std::endl;
+		std::cout << "number: " << node_number << std::endl;
 
 		create_nodes(new_nodes, *closest_node);
 		for(std::vector<a_node>::iterator i=new_nodes.begin(); i!=new_nodes.end(); i++) {
@@ -141,8 +143,8 @@ a_node *a_star(a_node start, a_node end, int &node_number) {
 			if(closed_set.find(i_key) != closed_set.end()) continue;
 			aux = &(*i);
 			//if((former_node = isInsideOpen(open_set.begin(), open_set.end(), it_vec, (*i))) != NULL) {
-			if(open_ref.find(i_key) != open_ref.end()) {
-				former_node = &(open_ref.find(i_key)->second);
+			if((it = open_ref.find(i_key)) != open_ref.end()) {
+				former_node = &(it->second);
 				if(former_node->g <= g_try_score) continue;
 				//				std::cout << "testeeee " << std::endl;
 				aux = former_node;
